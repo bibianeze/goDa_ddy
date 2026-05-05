@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoBash Webmail</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:     #3d8a96;
+      --dark:     #111111;
+      --nav-head: #2c2c2c;
+      --bg:       #f3f4f6;
+      --border:   #d0d3d8;
+      --ph:       #9aa3ae;
+      --txt:      #111111;
+      --sub:      #5a6370;
+      --white:    #ffffff;
+      --red:      #c0392b;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+    }
+
+    /* ── SVG illustration class resolution ── */
+    /* GoDaddy uses utility class names — we resolve them to real colors here */
+    .svg-fill-none        { fill: none; }
+    .svg-fill-white       { fill: #ffffff; }
+    .svg-fill-gray-dark   { fill: #2d3740; }
+    .svg-fill-gray-light  { fill: #c8d0d8; }
+    .svg-fill-primary-o   { fill: #1bba9a; }      /* teal */
+    .svg-stroke-gray-dark { stroke: #2d3740; }
+    .svg-stroke-gray-light{ stroke: #c8d0d8; }
+    .svg-stroke-white     { stroke: #ffffff; }
+
+    /* ── NAVBAR ── */
+    .nav {
+      background: var(--white);
+      border-bottom: 1px solid #e1e4e8;
+      height: 60px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav a { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav .brand { font-size: 1.45rem; font-weight: 700; color: var(--txt); letter-spacing: -0.3px; }
+ .nav svg{
+        width: 180px;
+    }
+    /* ── MAIN GRID ── */
+    .main {
+      display: grid;
+      grid-template-columns: 53fr 47fr;
+      min-height: calc(100vh - 60px - 52px);
+      align-items: stretch;
+    }
+   .illus {
+      flex: 1 1 0;
+      display: flex;
+      align-items: flex-start;      
+      justify-content: flex-start;  
+      padding: 48px 0 0 28px;       
+      overflow: hidden;
+    }
+    .illus svg {
+      width: 100%;
+      max-width: 670px;             
+      flex-shrink: 0;
+    }
+
+    /* ── RIGHT panel ── */
+    .formside {
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 40px 32px 40px 28px;
+    }
+
+    /* ── CARD ── */
+    .card { background: var(--white); border-radius: 5px; overflow: hidden; box-shadow: 0 2px 14px rgba(0,0,0,0.09); }
+    .card-head { background: var(--nav-head); padding: 45px 36px; text-align: center; }
+    .card-head h1 { color: var(--white); font-size: 1.65rem; font-weight: 700; }
+    .card-body { padding: 34px 36px 38px; }
+    .sign-title { font-size: 1.7rem; font-weight: 700; margin-bottom: 26px; }
+
+    .field { margin-bottom: 12px; }
+    .fi { position: relative; border: 1.5px solid var(--border); border-radius: 4px; transition: border-color .15s, box-shadow .15s; }
+    .fi:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(27,186,154,0.11); }
+    .fi input { width: 100%; padding: 17px 16px; font-size: .97rem; font-family: 'DM Sans', sans-serif; background: transparent; border: none; outline: none; color: var(--txt); }
+    .fi input::placeholder { color: var(--ph); }
+
+    .show-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--sub); font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 500; }
+    .show-btn:hover { color: var(--teal); }
+
+    .cbrow { display: flex; align-items: center; gap: 11px; margin: 18px 0 20px; }
+    .cbrow input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--border); border-radius: 4px; background: var(--white); cursor: pointer; position: relative; transition: background .13s, border-color .13s; }
+    .cbrow input:checked { background: var(--teal); border-color: var(--teal); }
+    .cbrow input:checked::after { content: ''; position: absolute; left: 6px; top: 2px; width: 6px; height: 12px; border: 2.5px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
+    .cbrow label { font-size: .96rem; cursor: pointer; user-select: none; }
+
+    .btn-in { width: 100%; padding: 17px; background: var(--dark); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; transition: background .16s; }
+    .btn-in:hover { background: #222; }
+
+    .forgot { display: block; text-align: center; margin-top: 20px; font-size: .94rem; color: var(--sub); }
+    .forgot a { color: var(--sub); text-decoration: underline; text-underline-offset: 2px; }
+    .forgot a:hover { color: var(--teal); }
+
+    .cta { margin-top: 22px; text-align: center; }
+    .cta p { font-size: .95rem; font-weight: 700; margin-bottom: 13px; }
+    .btn-start { width: 100%; padding: 16px; background: var(--white); color: var(--txt); font-family: 'DM Sans', sans-serif; font-size: .97rem; font-weight: 600; border: 1.5px solid var(--border); border-radius: 4px; cursor: pointer; transition: border-color .16s, background .16s; }
+    .btn-start:hover { border-color: var(--teal); background: #f0fdf9; }
+
+    /* ── Contact widget ── */
+    .cw { position: fixed; bottom: 24px; right: 24px; z-index: 200; }
+    .cw button { display: flex; align-items: center; gap: 9px; background: var(--white); border: 2px solid var(--dark); border-radius: 50px; padding: 10px 20px 10px 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .95rem; font-weight: 600; color: var(--txt); box-shadow: 0 3px 14px rgba(0,0,0,0.12); transition: box-shadow .15s; }
+    .cw button:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.18); background: #f8f8f8; }
+    .cw svg { width: 21px; height: 21px; flex-shrink: 0; }
+
+    footer { background: var(--bg); border-top: 1px solid #e1e4e8; height: 52px; display: flex; align-items: center; justify-content: center; font-size: .77rem; color: var(--sub); padding: 0 20px; text-align: center; }
+    footer a { color: var(--sub); text-decoration: underline; text-underline-offset: 2px; }
+    footer a:hover { color: var(--teal); }
+    .sep { margin: 0 3px; color: #c0c4ca; }
+
+    @media (max-width: 860px) {
+      .main { grid-template-columns: 1fr; }
+      .illus { display: none; }
+      .formside { padding: 36px 20px; align-items: center; }
+      .formside > * { width: 100%; max-width: 480px; }
+    }
+  </style>
+</head>
+<body>
+
+
+<!-- NAV -->
+<nav class="nav">
+  <!-- <a href="#">
+<img src="https://www.logo.wine/a/logo/GoDaddy/GoDaddy-White-Icon-Dark-Background-Logo.wine.svg" alt="">
+    <span class="brand">GoBash</span>
+  </a> -->
+
+  <svg viewBox="0 0 163 34" xmlns="http://www.w3.org/2000/svg"><path d="M32.937 1.554c-3.968-2.48-9.193-1.89-13.852 1.039C14.44-.335 9.213-.925 5.25 1.553c-6.27 3.919-7.032 14.01-1.701 22.54 3.93 6.289 10.074 9.974 15.544 9.906 5.47.068 11.615-3.617 15.545-9.906 5.324-8.53 4.568-18.621-1.701-22.54zM6.43 22.292a20.436 20.436 0 0 1-2.46-5.632 16.104 16.104 0 0 1-.534-5.31c.238-3.153 1.521-5.608 3.612-6.914s4.855-1.385 7.8-.217c.441.177.878.38 1.312.606a24.092 24.092 0 0 0-4.228 5.08C8.697 15.086 7.71 20.849 8.84 25.444a20.912 20.912 0 0 1-2.408-3.151H6.43zm27.786-5.634a20.484 20.484 0 0 1-2.46 5.632 21.103 21.103 0 0 1-2.408 3.158c1.01-4.12.324-9.165-2.153-13.897a.624.624 0 0 0-.895-.243l-7.72 4.823a.629.629 0 0 0-.2.87l1.133 1.81a.632.632 0 0 0 .869.2l5.004-3.125c.162.486.324.97.445 1.457.472 1.725.653 3.518.536 5.303-.238 3.15-1.521 5.606-3.612 6.914a7.061 7.061 0 0 1-3.579 1.036h-.16a7.051 7.051 0 0 1-3.578-1.036c-2.093-1.308-3.376-3.763-3.614-6.914a16.143 16.143 0 0 1 .534-5.31 21.015 21.015 0 0 1 6.444-10.314 16.136 16.136 0 0 1 4.532-2.806c2.936-1.168 5.705-1.09 7.797.217 2.093 1.308 3.375 3.76 3.613 6.914a16.145 16.145 0 0 1-.528 5.31zm39.848-3.766c-4.06 0-7.34 3.169-7.34 7.2 0 4.004 3.28 7.12 7.34 7.12 4.086 0 7.366-3.111 7.366-7.12 0-4.03-3.275-7.2-7.366-7.2zm0 10.557c-1.871 0-3.295-1.513-3.295-3.384s1.424-3.407 3.295-3.407c1.898 0 3.322 1.54 3.322 3.412 0 1.87-1.424 3.385-3.322 3.385v-.006zM90.583 7.362h-7.468a.6.6 0 0 0-.61.612v18.208a.607.607 0 0 0 .61.648h7.468c5.977 0 10.13-3.975 10.13-9.758 0-5.818-4.153-9.71-10.13-9.71zm.177 15.622h-4.087V11.198h4.087c3.308 0 5.588 2.474 5.588 5.866 0 3.336-2.28 5.92-5.588 5.92zm24.82-9.7h-2.809a.63.63 0 0 0-.582.612v.833c-.64-1.057-2.085-1.835-3.884-1.835-3.503 0-6.783 2.75-6.783 7.145 0 4.37 3.251 7.17 6.755 7.17 1.806 0 3.28-.776 3.92-1.833v.86a.585.585 0 0 0 .582.586h2.808a.575.575 0 0 0 .543-.36.564.564 0 0 0 .041-.225V13.896a.595.595 0 0 0-.591-.612zm-6.533 10.196c-1.86 0-3.256-1.43-3.256-3.412s1.397-3.41 3.256-3.41c1.86 0 3.257 1.426 3.257 3.408s-1.395 3.412-3.257 3.412v.002zm22.294-16.118h-2.808a.588.588 0 0 0-.561.355.598.598 0 0 0-.049.229v6.728c-.648-1.002-2.114-1.78-3.948-1.78-3.476 0-6.7 2.75-6.7 7.145 0 4.37 3.252 7.17 6.755 7.17 1.806 0 3.17-.776 3.92-1.833v.86c0 .323.261.584.583.586h2.808a.571.571 0 0 0 .584-.585V7.95a.569.569 0 0 0-.357-.547.573.573 0 0 0-.227-.041zm-6.532 16.152c-1.852 0-3.237-1.444-3.237-3.448s1.39-3.447 3.237-3.447c1.846 0 3.237 1.444 3.237 3.447s-1.384 3.448-3.237 3.448zm22.29-16.152h-2.803a.597.597 0 0 0-.562.355.581.581 0 0 0-.05.229v6.728c-.64-1.002-2.114-1.78-3.947-1.78-3.477 0-6.7 2.75-6.7 7.145 0 4.37 3.253 7.17 6.755 7.17 1.807 0 3.168-.776 3.92-1.833v.86a.586.586 0 0 0 .584.586h2.803a.571.571 0 0 0 .542-.36.564.564 0 0 0 .04-.225V7.95a.567.567 0 0 0-.582-.588zm-6.532 16.152c-1.853 0-3.237-1.444-3.237-3.448s1.39-3.447 3.237-3.447c1.846 0 3.237 1.444 3.237 3.447s-1.38 3.448-3.232 3.448h-.005zm21.906-9.283-4.19 14.37c-.809 2.556-2.613 4.086-5.421 4.086-1.277 0-2.44-.261-3.35-.782-.531-.303-.971-.58-.971-1.023 0-.275.089-.417.25-.675l.832-1.246c.235-.348.408-.461.66-.461a.96.96 0 0 1 .554.192c.523.339 1.008.63 1.748.63.864 0 1.524-.277 1.88-1.306l.36-1.193h-1.696c-.418 0-.648-.25-.751-.584l-3.75-12.008c-.14-.473-.011-.946.683-.946h2.954c.36 0 .613.123.771.64l2.77 9.67 2.589-9.67c.082-.334.306-.64.75-.64h2.802c.552-.001.719.387.526.946zm-96.806 4.274v7.676a.625.625 0 0 1-.635.634h-2.317a.622.622 0 0 1-.634-.634v-2.015c-1.472 1.858-4.03 3.028-6.924 3.028-5.434 0-9.681-4.088-9.681-9.908 0-6.048 4.585-10.217 10.377-10.217 4.276 0 7.694 1.839 9.212 5.537a.842.842 0 0 1 .07.309c0 .175-.116.307-.486.435l-2.706 1.042a.694.694 0 0 1-.511.009.783.783 0 0 1-.324-.371c-.971-1.847-2.7-3.1-5.36-3.1-3.45 0-5.922 2.694-5.922 6.188 0 3.387 2.104 6.172 6.02 6.172 2.06 0 3.703-.97 4.469-2.037H57.87a.625.625 0 0 1-.634-.635v-2.086a.626.626 0 0 1 .634-.634h7.161a.602.602 0 0 1 .587.367.6.6 0 0 1 .049.24z"></path></svg>
+</nav>
+
+<!-- MAIN GRID -->
+<div class="main">
+
+  <!-- ILLUSTRATION — real GoDaddy SVG with colors resolved -->
+  <div class="illus">
+ <svg data-testid="pass-desktop-icon-svg" viewBox="0 0 677 395" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .svg-fill-none { fill: none; }
+    .svg-stroke-gray-dark { stroke: #333; }
+    .svg-stroke-gray-light { stroke: #aaa; }
+    .svg-stroke-white { stroke: #fff; }
+    .svg-fill-white { fill: #fff; }
+    .svg-fill-gray-dark { fill: #333; }
+    .svg-fill-gray-light { fill: #ccc; }
+    .svg-fill-primary-o { fill: #3da8a3; }
+  </style>
+  <g id="a274fe">
+    <!-- desk line -->
+    <path stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" d="M2 243.66h196.88M216.22 243.94l458.71-.04" class="svg-fill-none svg-stroke-gray-dark"></path>
+
+    <!-- phone dock box -->
+    <rect x="523.08" y="269.84" width="84.33" height="20.88" rx="2" ry="2" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" class="svg-fill-white svg-stroke-gray-dark"></rect>
+    <path stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" d="M598.4 279.68h-66.67" class="svg-fill-none svg-stroke-gray-dark"></path>
+
+    <!-- phone body -->
+    <path stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" d="M593.33 215.84v44.84h-56.17V179.3h56.17v17.88" class="svg-fill-primary-o svg-stroke-gray-dark"></path>
+    <!-- phone checkmark -->
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M546.16 236.83l13.95-13.94M548 251.17l13.94-13.94" class="svg-fill-none svg-stroke-white"></path>
+    <!-- phone top/bottom caps -->
+    <path d="M593.33 179.3v-13.62a2 2 0 0 0-2-2h-52.17a2 2 0 0 0-2 2v13.62zM537.16 260.68v17a2 2 0 0 0 2 2h52.17a2 2 0 0 0 2-2v-17z" stroke-miterlimit="10" stroke-width="4" class="svg-fill-white svg-stroke-gray-dark"></path>
+    <path stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" d="M553.99 171.3h21.75" class="svg-fill-none svg-stroke-gray-light"></path>
+    <circle cx="564.87" cy="270.3" r="3.75" class="svg-fill-gray-light"></circle>
+
+    <!-- keyboard housing -->
+    <path d="M309.65 325.29h170.9a8.47 8.47 0 0 1 8.44 8.44v42.9a8.47 8.47 0 0 1-8.44 8.44H267.4a8.47 8.47 0 0 1-8.44-8.44v-42.9a8.47 8.47 0 0 1 8.44-8.44h27.22" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" class="svg-fill-white svg-stroke-gray-dark"></path>
+    <!-- keyboard keys row 1 -->
+    <rect x="269.31" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="289" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="308.69" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="328.39" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="348.08" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="367.78" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="387.47" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="407.17" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="426.86" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="446.55" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="466.25" y="335.84" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <!-- keyboard keys row 2 -->
+    <rect x="279.39" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="299.08" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="318.78" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="338.47" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="358.16" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="377.86" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="397.55" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="417.25" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="436.94" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="456.64" y="349.9" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <!-- keyboard keys row 3 -->
+    <rect x="269.31" y="363.97" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="289" y="363.97" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <!-- spacebar -->
+    <path d="M436.71 363.97h-125.2a2.82 2.82 0 0 0-2.81 2.82v5.62a2.82 2.82 0 0 0 2.81 2.82h125.2a2.82 2.82 0 0 0 2.81-2.82v-5.62a2.82 2.82 0 0 0-2.81-2.82z" class="svg-fill-gray-light"></path>
+    <rect x="446.55" y="363.97" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+    <rect x="466.25" y="363.97" width="12.66" height="11.25" rx="2.81" ry="2.81" class="svg-fill-gray-light"></rect>
+
+    <!-- mouse -->
+    <path d="M194.07 392.35a22.06 22.06 0 0 1-22-22v-26a21.83 21.83 0 0 1 2.6-10.36 22.13 22.13 0 0 1 19.4-11.64 22.06 22.06 0 0 1 22 22v26a22.06 22.06 0 0 1-22 22z" class="svg-fill-white"></path>
+    <path d="M209.6 328.81a21.89 21.89 0 0 0-15.53-6.46 22.06 22.06 0 0 0-22 22v26a22.06 22.06 0 0 0 22 22 22.06 22.06 0 0 0 22-22v-26a21.78 21.78 0 0 0-.83-6" stroke-linecap="round" stroke-miterlimit="10" stroke-width="3.838" class="svg-fill-none svg-stroke-gray-dark"></path>
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M188.46 353.84h-16M189.65 359.84h-17.19M191.2 365.84h-18.74M193.45 371.84h-20.83M196.27 377.84h-22.31M200.15 383.84h-23.38" class="svg-fill-none svg-stroke-gray-dark"></path>
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M172.46 345.1h43.1M194.06 323.18v21.92" class="svg-fill-none svg-stroke-gray-dark"></path>
+
+    <!-- lamp glow -->
+    <path d="M212.45 43.4a39.75 39.75 0 1 1-68 41.17" fill="#fee782"></path>
+    <!-- lamp shade lines -->
+    <path d="M170.4 83.39a19.18 19.18 0 0 1-6.88-6.73M196.5 56.68a19.28 19.28 0 0 1-12.24 28.8M105.44 241.9L67.16 133.96M66.04 128.98L111.4 11.43h24" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" class="svg-fill-none svg-stroke-gray-dark"></path>
+    <!-- lamp pivot -->
+    <circle cx="66.32" cy="128.93" r="11" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" class="svg-fill-gray-light svg-stroke-gray-dark"></circle>
+    <!-- lamp shade fill -->
+    <path d="M136.4 29.8a18.32 18.32 0 1 1 31.33-19z" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" class="svg-fill-gray-light svg-stroke-gray-dark"></path>
+    <path d="M219.4 42.82l-88.43 53.53a55.95 55.95 0 0 1 88.9-67" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" class="svg-fill-gray-light svg-stroke-gray-dark"></path>
+
+    <!-- lamp base -->
+    <path d="M58.4 272.29v10.07c0 5.44 20.63 9.84 46.08 9.84s46.08-4.4 46.08-9.84v-10.07z" stroke-miterlimit="10" stroke-width="4" class="svg-fill-gray-light svg-stroke-gray-dark"></path>
+    <path d="M141.03 265.36c6 1.66 9.55 3.74 9.55 6 0 5.44-20.63 9.84-46.08 9.84s-46.1-4.41-46.1-9.85 20.63-9.84 46.08-9.84a184.56 184.56 0 0 1 25.37 1.67" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" class="svg-fill-white svg-stroke-gray-dark"></path>
+    <path d="M92.98 268.35v-22.82a5.77 5.77 0 0 1 5.76-5.76h11.52a5.77 5.77 0 0 1 5.76 5.76v22.82" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" class="svg-fill-gray-light svg-stroke-gray-dark"></path>
+    <!-- shade hatching lines -->
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M125.49 49.19l10.83-6.62M124.07 57.09l13.72-8.38M123.03 64.76l16.69-10.2M122.9 71.87l19.24-11.76M123.89 78.29l20.83-12.72M125.58 84.3l22.88-13.99M127.83 89.95l24.84-15.18" class="svg-fill-none svg-stroke-gray-dark"></path>
+
+    <!-- monitor stand -->
+    <path d="M347.4 280.73h77.32a7.11 7.11 0 0 0 7.09-7.09v-1.18c0-3.9-2.94-4.45-7.09-7.09l-10.66-6-6-41.34h-70.57l-6 41.34-11 6c-3.3 2-7.08 3.19-7.08 7.09v1.18a7.11 7.11 0 0 0 7.08 7.09h9.18" class="svg-fill-white"></path>
+    <path d="M347.4 280.73h77.32a7.11 7.11 0 0 0 7.09-7.09v-1.18c0-3.9-2.94-4.45-7.09-7.09l-10.66-6-6-41.34h-70.57l-6 41.34-11 6c-3.3 2-7.08 3.19-7.08 7.09v1.18a7.11 7.11 0 0 0 7.08 7.09h9.18" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" class="svg-fill-none svg-stroke-gray-dark"></path>
+
+    <!-- monitor body outline -->
+    <path d="M501.9 164.05v54.22a6.78 6.78 0 0 1-6.67 6.85H249.9a6.79 6.79 0 0 1-6.67-6.85V22.91a6.79 6.79 0 0 1 6.67-6.85h245.33a6.78 6.78 0 0 1 6.67 6.85v123.42" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" class="svg-fill-white svg-stroke-gray-dark"></path>
+
+    <!-- monitor screen -->
+    <path d="M262.98 186.41a5 5 0 0 1-4.88-5.09V36.05a5 5 0 0 1 4.88-5.09h220.1a5 5 0 0 1 4.88 5.09v145.27a5 5 0 0 1-4.88 5.09z" class="svg-fill-primary-o"></path>
+    <path d="M483.08 32.96a3 3 0 0 1 2.88 3.09v145.27a3 3 0 0 1-2.88 3.09h-220.1a3 3 0 0 1-2.88-3.09V36.05a3 3 0 0 1 2.88-3.09h220.1m0-4h-220.1a7 7 0 0 0-6.88 7.09v145.27a7 7 0 0 0 6.88 7.09h220.1a7 7 0 0 0 6.88-7.09V36.05a7 7 0 0 0-6.88-7.09z" class="svg-fill-gray-dark"></path>
+
+    <!-- monitor bottom bar -->
+    <path stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" d="M260.88 210.94h26.99" class="svg-fill-none svg-stroke-gray-dark"></path>
+    <circle cx="373.01" cy="204.74" r="6.2" stroke-miterlimit="10" stroke-width="4" class="svg-fill-gray-light svg-stroke-gray-dark"></circle>
+    <circle cx="300.27" cy="210.94" r="3.54" class="svg-fill-gray-dark"></circle>
+
+    <!-- address bar on screen -->
+    <path stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" d="M304.88 44.28h49.99" class="svg-fill-none svg-stroke-white"></path>
+    <!-- browser dots -->
+    <circle cx="294.6" cy="44.28" r="3.54" class="svg-fill-white"></circle>
+    <circle cx="282.6" cy="44.28" r="3.54" class="svg-fill-white"></circle>
+    <circle cx="270.6" cy="44.28" r="3.54" class="svg-fill-white"></circle>
+
+    <!-- white circle background behind avatar -->
+    <circle cx="371" cy="108" r="36" fill="#ffffff"></circle>
+
+    <!-- avatar on screen -->
+    <path d="M391.24 120.47c-1.66-4.19-8.16-6.67-13.6-8.32a1.72 1.72 0 0 1-1-1.59 1.82 1.82 0 0 1 .37-1.1 15.4 15.4 0 0 0 4-10.27c0-5.92-3.25-11.67-10-11.67s-10 5.75-10 11.67a15.4 15.4 0 0 0 4 10.27 1.81 1.81 0 0 1 .36 1.1 1.71 1.71 0 0 1-1 1.59c-5.45 1.65-11.94 4.13-13.6 8.32a6.39 6.39 0 0 0-.47 2.41 6 6 0 0 0 4.75 6h31.86a6 6 0 0 0 4.74-6 6.58 6.58 0 0 0-.41-2.41z" class="svg-fill-gray-light"></path>
+
+    <!-- monitor base line -->
+    <path stroke-linecap="round" stroke-miterlimit="10" stroke-width="4" d="M331.67 259.88h66.96" class="svg-fill-none svg-stroke-gray-dark"></path>
+  </g>
+</svg>
+  </div>
+
+  <!-- FORM -->
+  <div class="formside">
+    <div class="card">
+      <div class="card-head"><h1>Webmail</h1></div>
+      <div class="card-body">
+        <p class="sign-title">Sign in</p>
+        <div class="field">
+          <div class="fi">
+            <input type="email" placeholder="Email *" autocomplete="email"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fi">
+            <input type="password" id="pwd" placeholder="Password *" style="padding-right:70px" autocomplete="current-password"/>
+            <button class="show-btn" type="button" onclick="tp(this)">Show</button>
+          </div>
+        </div>
+        <div class="cbrow">
+          <input type="checkbox" id="k" checked/>
+          <label for="k">Keep me signed in on this device</label>
+        </div>
+        <button class="btn-in" type="button">Sign In</button>
+        <span class="forgot">Need to find <a href="#">your password</a>?</span>
+      </div>
+    </div>
+    <div class="cta">
+      <p>Don't have GoDaddy email?</p>
+      <button class="btn-start" type="button">Get Started</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- CONTACT WIDGET -->
+<div class="cw">
+  <button type="button">
+    <svg viewBox="0 0 24 24" fill="none">
+      <rect x="2" y="3" width="20" height="14" rx="3" stroke="#111" stroke-width="1.9"/>
+      <path d="M7 19l2-2h7" stroke="#111" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="8" cy="10" r="1.2" fill="#111"/>
+      <circle cx="12" cy="10" r="1.2" fill="#111"/>
+      <circle cx="16" cy="10" r="1.2" fill="#111"/>
+    </svg>
+    Contact Us
+  </button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Copyright &copy; 1999&ndash;2026 GoBash Operating Company, LLC. All Rights Reserved.
+  <span class="sep"></span><a href="#">Privacy Policy</a>
+
+</footer>
+
+<script>
+function tp(b){
+  const i=document.getElementById('pwd');
+  const h=i.type==='password';
+  i.type=h?'text':'password';
+  b.textContent=h?'Hide':'Show';
+}
+</script>
+</body>
+</html>
